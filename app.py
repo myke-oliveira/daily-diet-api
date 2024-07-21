@@ -10,7 +10,7 @@ from models.user import User
 DATA_BASE_CONNECTION_STRING = "sqlite:///datababase.db"
 
 app = Flask(__name__)
-app.config["SECRETE_KEY"] = "your_secrete_key"
+app.config["SECRET_KEY"] = "your_secrete_key"
 app.config["SQLALCHEMY_DATABASE_URI"] = DATA_BASE_CONNECTION_STRING
 
 login_manager = LoginManager()
@@ -47,14 +47,32 @@ def create_user():
         "message": "User created",
         "user": new_user.as_dict()
     }), 201
+    
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
 
 @app.route("/login", methods=["POST"])
 def login():
-    pass
+    username = request.json.get("username")
+    password = request.json.get("password")
+    
+    if not username or not password:
+        return jsonify({"message": "Invalid credentials"}), 422
+    
+    user = User.query.filter_by(username=username).first()
+    
+    if not user or not checkpw(password.encode(), user.password):
+        return jsonify({"message": "Invalid credentials"}), 422
+    
+    login_user(user)
+    
+    return jsonify({"message": "User authenticated"})
 
 @app.route("/logout", methods=["GET"])
 def logout():
-    pass
+    logout_user()
+    return jsonify({"message": "Logged out"})
 
 @app.route("/recipe", methods=["POST"])
 def create_recipe():
