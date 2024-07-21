@@ -109,14 +109,43 @@ def create_recipe():
         "recipe": recipe.as_dict()
     }), 201
 
-@app.route("/recipe/<int:recibe_id>", methods=["PUT"])
+@app.route("/recipe/<int:recipe_id>", methods=["PUT"])
 @login_required
-def update_recipe():
-    pass
+def update_recipe(recipe_id):
+    name = request.json.get("name")
+    description = request.json.get("description")
+    date_time = request.json.get("date_time")
+    on_the_diet = request.json.get("on_the_diet")
+    
+    if not name or not description or type(on_the_diet) != bool:
+        return jsonify({"message": "Invalid Request"}), 400
+    
+    try:
+        date_time = datetime.fromisoformat(date_time)
+    except (TypeError, ValueError) as error:
+        return jsonify({"message": "Invalid Request"}), 400
+    
+    recipe = Recipe.query.get(recipe_id)
+    
+    if not recipe:
+        return jsonify({"message": "Recipe does not exist"}), 404
+    
+    recipe.name = name
+    recipe.description = description
+    recipe.date_time = date_time
+    recipe.on_the_diet = on_the_diet
+    recipe.last_modifiled = datetime.now()
+    
+    db.session.commit()
+    
+    return jsonify({
+        "message": "Recipe updated",
+        "recipe": recipe.as_dict()
+    })
 
 @app.route("/recipe/<int:recipe_id>", methods=["DELETE"])
 @login_required
-def delete_recipe():
+def delete_recipe(recipe_id):
     pass
 
 if __name__ == "__main__":
