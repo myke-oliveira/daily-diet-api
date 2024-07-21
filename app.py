@@ -127,7 +127,7 @@ def update_recipe(recipe_id):
     
     recipe = Recipe.query.get(recipe_id)
     
-    if not recipe:
+    if not recipe or recipe.user_id != current_user.id:
         return jsonify({"message": "Recipe does not exist"}), 404
     
     recipe.name = name
@@ -146,7 +146,15 @@ def update_recipe(recipe_id):
 @app.route("/recipe/<int:recipe_id>", methods=["DELETE"])
 @login_required
 def delete_recipe(recipe_id):
-    pass
+    recipe = Recipe.query.get(recipe_id)
+    
+    if not recipe or recipe.user_id != current_user.id:
+        return jsonify({"message": "Recipe does not exist"}), 404
+    
+    db.session.delete(recipe)
+    db.session.commit()
+    
+    return jsonify({"message": "Recipe deleted"})
 
 if __name__ == "__main__":
     app.run(debug=True)
