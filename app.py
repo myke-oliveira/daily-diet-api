@@ -6,6 +6,7 @@ from bcrypt import hashpw, checkpw, gensalt
 from database import db
 from models.recipe import Recipe
 from models.user import User
+from datetime import datetime
 
 DATA_BASE_CONNECTION_STRING = "sqlite:///datababase.db"
 
@@ -75,14 +76,46 @@ def logout():
     return jsonify({"message": "Logged out"})
 
 @app.route("/recipe", methods=["POST"])
+@login_required
 def create_recipe():
-    pass
+    name = request.json.get("name")
+    description = request.json.get("description")
+    date_time = request.json.get("date_time")
+    on_the_diet = request.json.get("on_the_diet")
+    
+    if not name or not description or type(on_the_diet) != bool:
+        return jsonify({"message": "Invalid Request"}), 400
+    
+    try:
+        date_time = datetime.fromisoformat(date_time)
+    except (TypeError, ValueError) as error:
+        return jsonify({"message": "Invalid Request"}), 400
+    
+    recipe = Recipe(
+        name=name,
+        description=description,
+        date_time=date_time,
+        on_the_diet=on_the_diet,
+        user_id=current_user.id,
+        created_at=datetime.now(),
+        last_modifiled_at=datetime.now()
+    )
+    
+    db.session.add(recipe)
+    db.session.commit()
+    
+    return jsonify({
+        "message": "Recipe created",
+        "recipe": recipe.as_dict()
+    }), 201
 
 @app.route("/recipe/<int:recibe_id>", methods=["PUT"])
+@login_required
 def update_recipe():
     pass
 
 @app.route("/recipe/<int:recipe_id>", methods=["DELETE"])
+@login_required
 def delete_recipe():
     pass
 
