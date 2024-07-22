@@ -156,5 +156,21 @@ def delete_recipe(recipe_id):
     
     return jsonify({"message": "Recipe deleted"})
 
+
+@app.route("/recipe", methods=["GET"])
+@login_required
+def list_recipes():
+    user_id = request.args.get("user_id")
+    
+    if user_id is None:
+        recipes = Recipe.query.all()
+    else:
+        recipes = Recipe.query.filter_by(user_id=user_id).all()
+    
+    return jsonify({
+        "recipes": [recipe.as_dict() for recipe in recipes],
+        "count": len(recipes)
+    })
+
 if __name__ == "__main__":
     app.run(debug=True)
