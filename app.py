@@ -156,6 +156,15 @@ def delete_recipe(recipe_id):
     
     return jsonify({"message": "Recipe deleted"})
 
+@app.route("/recipe/<int:recipe_id>", methods=["GET"])
+@login_required
+def show_recipe(recipe_id):
+    recipe = Recipe.query.get(recipe_id)
+    
+    if not recipe:
+        return jsonify({"message": "Recipe does not exist"}), 404
+
+    return jsonify(recipe.as_dict())
 
 @app.route("/recipe", methods=["GET"])
 @login_required
