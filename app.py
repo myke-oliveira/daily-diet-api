@@ -7,8 +7,11 @@ from database import db
 from models.recipe import Recipe
 from models.user import User
 from datetime import datetime
+from dotenv import load_dotenv
+from os import environ
 
-DATA_BASE_CONNECTION_STRING = "sqlite:///datababase.db"
+load_dotenv()
+DATA_BASE_CONNECTION_STRING = environ.get("DATA_BASE_CONNECTION_STRING")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "your_secrete_key"
